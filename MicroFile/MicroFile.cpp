@@ -304,20 +304,24 @@ BOOL MicroText::Load()
 	if (fileData)
 		delete[] fileData;
 
-	fileData = new BYTE[size + (m_code == 1 ? 1 : 2)];
+	size += (m_code == 1 ? 1 : 2);
+
+	fileData = new BYTE[size];
 	nPoint = fileData;
-	BOOL result = ReadFile(this->m_file, fileData, size, &this->size, NULL);
+
+	BOOL result = ReadFile(this->m_file, fileData, GetFileSize(this->m_file, NULL), &this->size, NULL);
+	this->size += (m_code == 1 ? 1 : 2);
 	if (!result) {
 		this->Clear();
 		return 0;
 	}
 	if (m_code == 1) {
-		((LPSTR)fileData)[this->size] = '\0';
+		((LPSTR)fileData)[this->size-1] = '\0';
 		*Data = (LPSTR)fileData;
 		*Data += "\0";
 	}
 	else {
-		((LPWSTR)fileData)[this->size /2] = L'\0';
+		((LPWSTR)fileData)[(this->size /2)-1] = L'\0';
 		*wData = (LPWSTR)fileData;
 		*wData += L"\0";
 	}
@@ -371,17 +375,19 @@ void  MicroText::Push(LPCWSTR sour)
 void MicroText::Pop(LPWSTR tart,int snbize)
 {
 	int locSize = snbize*2;
-	wData->erase(wData->end() - locSize);
+	wData->erase(wData->end() - snbize, wData->end());
 
-	this->MicroFile::Pop(tart,2+( locSize * 2));
-	this->MicroFile::Push(L'\0', 2);
+	this->MicroFile::Pop(tart,2+ locSize);
+	wchar_t loc0 = L'\0';
+	this->MicroFile::Push(&loc0, 2);
 }
 void MicroText::Pop(LPSTR tart, int snbize)
 {
 	int locSize = snbize;
-	Data->erase(Data->end() - locSize);
+	Data->erase(Data->end() - locSize, Data->end());
 	this->MicroFile::Pop(tart, locSize+1);
-	this->MicroFile::Push(L'\0', 1);
+	char loc0 = '\0';
+	this->MicroFile::Push(&loc0, 1);
 }
 void MicroText::Clear()
 {
