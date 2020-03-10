@@ -8,6 +8,9 @@ using namespace std;
 #define DLLAPI __declspec(dllexport)
 
 
+#define ENCODE_BYTE 1
+#define ENCODE_WORD 2
+#define ENCODE_DWORD 4
 
  class DLLAPI MicroFile
 {
@@ -17,7 +20,7 @@ public:
 	//关闭文件句柄，清理内存
 	~MicroFile();
 	//将文件完整装入内存
-	BOOL Load();
+	virtual BOOL Load();
 	//清空文件
 	void Clear();
     //保存修改
@@ -51,7 +54,7 @@ protected:
 	HANDLE m_file = NULL;
 	BYTE* fileData = NULL;
 	DWORD size;
-	wstring name;
+	wstring* name = new wstring;
 	BYTE* nPoint = NULL;
 };
 
@@ -61,10 +64,10 @@ public:
 	MicroBinary(LPCWSTR filename);
 	~MicroBinary();
 
-	BOOL Get(LPBYTE tart);
+	
 	BOOL Get(LPWORD tart);
 	BOOL Get(LPDWORD tart);
-
+    BOOL Get(LPBYTE tart);
 	BOOL Set(BYTE sour);
 	BOOL Set(WORD sour);
 	BOOL Set(DWORD sour);
@@ -74,23 +77,45 @@ private:
 
 };
 
-class MicroText:public MicroFile
+
+class DLLAPI MicroText:public MicroFile
 {
 public:
-	MicroText(LPCWSTR filename);
+	MicroText(LPCWSTR filename,UINT code);
 	~MicroText();
+
 
 	BOOL Get(LPWSTR tart);
 	BOOL Get(LPSTR tart);
 
-	//MicroText& operator=(int sour);
-	//void Push(LPCWSTR sour);
-	//void Push(LPCSTR sour);
+	BOOL Get(LPBYTE tart);
+	BOOL Set(BYTE sour);
 
-	//void Pop(LPWSTR tart);
-	//void Pop(LPSTR tart);
+	BOOL Set(LPCWSTR tart);
+	BOOL Set(LPCSTR tart);
+
+
+	BOOL Load();
+	//MicroText& operator=(int sour);
+	void Push(LPCWSTR sour);
+	void Push(LPCSTR sour);
+
+
+	void Pop(LPWSTR tart,int snbize);
+	void Pop(LPSTR tart, int snbize);
+	void Clear();
+
+	MicroText& operator=(int sour);
+
+	char& operator*();
+	WCHAR& operator&();
+
+	BOOL operator++(int);
+	BOOL operator--(int);
 
 	//void Sub(LPBYTE tart, int size);
 private:
-
+	int m_code;
+	wstring* wData = new wstring;
+	string* Data = new string;
 };

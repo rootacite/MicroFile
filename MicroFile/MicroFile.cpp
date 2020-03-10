@@ -3,7 +3,7 @@
 
 MicroFile::MicroFile(LPCWSTR filename)
 {
-	name = filename;
+	*name = filename;
 	this->m_file = CreateFileW(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
@@ -12,13 +12,14 @@ MicroFile::~MicroFile()
 	if (fileData)
 		delete[] fileData;
 	CloseHandle(m_file);
+	delete name;
 }
 
 BOOL MicroFile::Load()
 {
 	if (this->m_file == INVALID_HANDLE_VALUE)
 		return 0;
-    size = GetFileSize(this->m_file, NULL);
+   int size = GetFileSize(this->m_file, NULL);
 
 	if (size == 0) {
 		fileData = NULL;
@@ -49,7 +50,7 @@ void MicroFile::Clear()
 BOOL MicroFile::Save()
 {
 	CloseHandle(this->m_file);
-	this->m_file = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	this->m_file = CreateFileW((*name).c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if (this->m_file == INVALID_HANDLE_VALUE)
 		return 0;
@@ -238,27 +239,6 @@ BOOL MicroFile::Gate(LPVOID tart)
 	return 0;
 }
 
-MicroText::MicroText(LPCWSTR filename) :MicroFile(filename)
-{
-}
-
-MicroText::~MicroText()
-{
-}
-
-BOOL MicroText::Get(LPWSTR tart)
-{
-	lstrcpyW(tart, (LPCWSTR)nPoint);
-
-	return 0;
-}
-
-BOOL MicroText::Get(LPSTR tart)
-{
-	lstrcpyA(tart, (LPSTR)nPoint);
-	return 0;
-}
-
 MicroBinary& MicroBinary::operator=(int sour)
 {
 	if (sour > this->size)
@@ -268,4 +248,214 @@ MicroBinary& MicroBinary::operator=(int sour)
 	}
 	nPoint = fileData + sour;
 	return *this;
+}
+
+MicroText::MicroText(LPCWSTR filename, UINT code) :MicroFile(filename)
+{
+	switch (code) {
+	case ENCODE_BYTE:
+		m_code = 1;
+		break;
+	case ENCODE_WORD:
+		m_code = 2;
+		break;
+	case ENCODE_DWORD:
+		m_code = 4;
+		break;
+	default:
+		throw "undefined code";
+	}
+}
+
+MicroText::~MicroText()
+{
+	delete Data;
+	delete wData;
+}
+
+BOOL MicroText::Get(LPWSTR tart)
+{
+	lstrcpyW(tart, wData->c_str());
+
+	return 0;
+}
+
+BOOL MicroText::Get(LPSTR tart)
+{
+	lstrcpyA(tart, Data->c_str());
+	return 0;
+}
+
+BOOL MicroText::Load()
+{
+	if (this->m_file == INVALID_HANDLE_VALUE)
+		return 0;
+	int size = GetFileSize(this->m_file, NULL);
+
+	if (size == 0) {
+		if (m_code == 1)
+			*Data = "";
+		else
+			*wData = L"";
+		fileData = NULL;
+		nPoint = NULL;
+		return 1;
+	}
+	if (fileData)
+		delete[] fileData;
+
+	fileData = new BYTE[size + (m_code == 1 ? 1 : 2)];
+	nPoint = fileData;
+	BOOL result = ReadFile(this->m_file, fileData, size, &this->size, NULL);
+	if (!result) {
+		this->Clear();
+		return 0;
+	}
+	if (m_code == 1) {
+		((LPSTR)fileData)[this->size] = '\0';
+		*Data = (LPSTR)fileData;
+		*Data += "\0";
+	}
+	else {
+		((LPWSTR)fileData)[this->size /2] = L'\0';
+		*wData = (LPWSTR)fileData;
+		*wData += L"\0";
+	}
+	return 1;
+}
+
+BOOL MicroText::Set(BYTE tart)
+{
+	*nPoint = tart;
+	return 0;
+}
+
+BOOL MicroText::Get(LPBYTE tart)
+{
+	*tart = *nPoint;
+	return 0;
+}
+
+BOOL MicroText::Set(LPCWSTR tart)
+{
+	this->Clear();
+	this->Push(tart);
+
+	*wData = tart;
+	return 0;
+}
+
+BOOL MicroText::Set(LPCSTR tart)
+{
+	this->Clear();
+	this->Push(tart);
+
+	*Data = tart;
+	return 0;
+}
+
+void  MicroText::Push(LPCSTR sour)
+{
+	*Data += sour;
+	this->MicroFile::Pop(NULL, 1);
+	this->MicroFile::Push(sour, lstrlenA(sour)+1);
+}
+
+void  MicroText::Push(LPCWSTR sour)
+{
+	*wData += sour;
+	this->MicroFile::Pop(NULL, 2);
+	this->MicroFile::Push(sour, (lstrlenW(sour)+1) * 2);
+}
+
+void MicroText::Pop(LPWSTR tart,int snbize)
+{
+	int locSize = snbize*2;
+	wData->erase(wData->end() - locSize);
+
+	this->MicroFile::Pop(tart,2+( locSize * 2));
+	this->MicroFile::Push(L'\0', 2);
+}
+void MicroText::Pop(LPSTR tart, int snbize)
+{
+	int locSize = snbize;
+	Data->erase(Data->end() - locSize);
+	this->MicroFile::Pop(tart, locSize+1);
+	this->MicroFile::Push(L'\0', 1);
+}
+void MicroText::Clear()
+{
+	this ->MicroFile::Clear();
+	if (m_code == 1)
+		*Data = "";
+	else
+		*wData = L"";
+}
+
+
+
+MicroText& MicroText::operator=(int sour)
+{
+	if (m_code == 1)
+		nPoint = fileData + sour;
+	else
+		nPoint = fileData + (sour*2);
+
+	return *this;
+	// TODO: 在此处插入 return 语句
+}
+
+char& MicroText::operator*()
+{
+		return *(CHAR*)nPoint;
+	// TODO: 在此处插入 return 语句
+}
+
+WCHAR& MicroText::operator&()
+{
+	return *(WCHAR*)nPoint;
+	// TODO: 在此处插入 return 语句
+}
+
+BOOL MicroText::operator++(int)
+{
+	if (m_code == 1)
+	{
+		if (nPoint + 1 > fileData + size) {
+			return 0;
+		}
+		nPoint++;
+		return 1;
+	}
+	else 
+	{
+		if (nPoint + 2 > fileData + size) {
+			return 0;
+		}
+		nPoint+=2;
+		return 1;
+	}
+}
+
+BOOL MicroText::operator--(int)
+{
+	
+
+	if (m_code == 1)
+	{
+		if (nPoint - 1 < fileData) {
+			return 0;
+		}
+		nPoint--;
+		return 1;
+	}
+	else
+	{
+		if (nPoint - 2 < fileData) {
+			return 0;
+		}
+		nPoint -= 2;
+		return 1;
+	}
+	return 0;
 }
