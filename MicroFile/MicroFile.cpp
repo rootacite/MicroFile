@@ -29,13 +29,15 @@ BOOL MicroFile::Load()
 	fileData = new BYTE[size];
 	nPoint = fileData;
 	BOOL result = ReadFile(this->m_file, fileData, size, &this->size, NULL);
-
-	return result;
+	if (!result) {
+		this->Clear();
+		return 0;
+	}
+	return 1;
 }
 
 void MicroFile::Clear()
 {
-	ZeroMemory(fileData, size);
 	size = 0;
 	delete[] fileData;
 	fileData = NULL;
@@ -47,6 +49,8 @@ BOOL MicroFile::Save()
 	CloseHandle(this->m_file);
 	this->m_file = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
+	if (this->m_file == INVALID_HANDLE_VALUE)
+		return 0;
 	if (size > 0)
 		return WriteFile(this->m_file, fileData, size, NULL, NULL);
 	return 1;
@@ -114,13 +118,18 @@ void MicroFile::Pop(LPVOID sour, ULONG size)
 	return;
 }
 
-void MicroFile::Sub(PBYTE tart, int size)
+void MicroFile::Sub(LPBYTE tart, int size)
 {
 	memcpy_s(tart, size, nPoint, size);
 }
 
 void MicroFile::operator=(DWORD sour)
 {
+	if (sour > this->size)
+	{
+		nPoint = fileData + size;
+		return;
+	}
 	nPoint = fileData + sour;
 }
 
@@ -130,24 +139,40 @@ BYTE& MicroFile::operator*()
 	// TODO: 在此处插入 return 语句
 }
 
-void MicroFile::operator++()
+BOOL MicroFile::operator++()
 {
+	if (nPoint + 1 > fileData + size) {
+		return 0;
+	}
 	nPoint ++;
+	return 1;
 }
 
-void MicroFile::operator--()
+BOOL MicroFile::operator--()
 {
+	if (nPoint - 1 < fileData) {
+		return 0;
+	}
 	nPoint--;
+	return 1;
 }
 
-void MicroFile::operator-=(DWORD count)
+BOOL MicroFile::operator-=(DWORD count)
 {
+	if (nPoint - count < fileData) {
+		return 0;
+	}
 	nPoint -= count;
+	return 1;
 }
 
-void MicroFile::operator+=(DWORD count)
+BOOL MicroFile::operator+=(DWORD count)
 {
+	if (nPoint + count > fileData + size) {
+		return 0;
+	}
 	nPoint += count;
+	return 1;
 }
 
 MicroBinary::MicroBinary(LPCWSTR filename) :MicroFile(filename)
@@ -158,20 +183,20 @@ MicroBinary::~MicroBinary()
 {
 }
 
-BOOL MicroBinary::Get(PBYTE tart)
+BOOL MicroBinary::Get(LPBYTE tart)
 {
 	*tart = *nPoint;
 
 	return 0;
 }
 
-BOOL MicroBinary::Get(PWORD tart)
+BOOL MicroBinary::Get(LPWORD tart)
 {
 	*tart = *(WORD*)nPoint;
 	return 0;
 }
 
-BOOL MicroBinary::Get(PDWORD tart)
+BOOL MicroBinary::Get(LPDWORD tart)
 {
 	*tart = *(DWORD*)nPoint;
 	return 0;
