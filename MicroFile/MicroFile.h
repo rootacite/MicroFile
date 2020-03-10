@@ -1,11 +1,13 @@
 #pragma once
-
+#include <Windows.h>
 
 #include <string>
 using namespace std;
 
 
 #define DLLAPI __declspec(dllexport)
+
+
 
  class DLLAPI MicroFile
 {
@@ -29,15 +31,21 @@ public:
 	//从当前读取位置截取数据
 	void Sub(LPBYTE tart,int size);
 
+	//复制整个文件数据
+	BOOL Gate(LPVOID tart);
+
 	virtual BOOL Get(LPBYTE tart) = 0;
 	virtual BOOL Set(BYTE sour) = 0;
 
-	void operator=(DWORD sour);
+	MicroFile& operator=(int sour);
+
 	BYTE &operator*();
-	BOOL operator++();
-	BOOL operator--();
+	BOOL operator++(int);
+	BOOL operator--(int);
 	BOOL operator-=(DWORD count);
 	BOOL operator+=(DWORD count);
+
+
 
 protected:
 	HANDLE m_file = NULL;
@@ -61,6 +69,28 @@ public:
 	BOOL Set(WORD sour);
 	BOOL Set(DWORD sour);
 
+	MicroBinary& operator=(int sour);
+private:
+
+};
+
+class MicroText:public MicroFile
+{
+public:
+	MicroText(LPCWSTR filename);
+	~MicroText();
+
+	BOOL Get(LPWSTR tart);
+	BOOL Get(LPSTR tart);
+
+	//MicroText& operator=(int sour);
+	//void Push(LPCWSTR sour);
+	//void Push(LPCSTR sour);
+
+	//void Pop(LPWSTR tart);
+	//void Pop(LPSTR tart);
+
+	//void Sub(LPBYTE tart, int size);
 private:
 
 };

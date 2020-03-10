@@ -39,7 +39,9 @@ BOOL MicroFile::Load()
 void MicroFile::Clear()
 {
 	size = 0;
-	delete[] fileData;
+
+	if (fileData)
+		delete[] fileData;
 	fileData = NULL;
 	nPoint = NULL;
 }
@@ -80,7 +82,9 @@ void MicroFile::Push(LPCVOID sour, ULONG size)
 	memcpy_s(nNewData, this->size, fileData, this->size);
 	memcpy_s((nNewData + this->size), size, sour, size);
 
-	delete[] fileData;
+
+	if (fileData)
+		delete[] fileData;
 	fileData = nNewData;
 	nPoint = fileData;
 	nPoint += pointOffset;
@@ -95,7 +99,9 @@ void MicroFile::Pop(LPVOID sour, ULONG size)
 			memcpy_s(sour, this->size, fileData, this->size);
 		this->size = 0;
 		nPoint = NULL;
-		delete[] fileData;
+
+		if (fileData)
+			delete[] fileData;
 		fileData = NULL;
 		return;
 	}
@@ -106,7 +112,9 @@ void MicroFile::Pop(LPVOID sour, ULONG size)
 	if (sour)
 		memcpy_s(sour, size, fileData + (this->size - size), size);
 
-	delete[] fileData;
+
+	if (fileData)
+		delete[] fileData;
 	fileData = nNewData;
 	this->size -= size;
 	if (pointOffset > size) {
@@ -123,14 +131,15 @@ void MicroFile::Sub(LPBYTE tart, int size)
 	memcpy_s(tart, size, nPoint, size);
 }
 
-void MicroFile::operator=(DWORD sour)
+MicroFile& MicroFile::operator=(int sour)
 {
 	if (sour > this->size)
 	{
 		nPoint = fileData + size;
-		return;
+		return *this;
 	}
 	nPoint = fileData + sour;
+	return *this;
 }
 
 BYTE& MicroFile::operator*()
@@ -139,7 +148,7 @@ BYTE& MicroFile::operator*()
 	// TODO: 在此处插入 return 语句
 }
 
-BOOL MicroFile::operator++()
+BOOL MicroFile::operator++(int)
 {
 	if (nPoint + 1 > fileData + size) {
 		return 0;
@@ -148,7 +157,7 @@ BOOL MicroFile::operator++()
 	return 1;
 }
 
-BOOL MicroFile::operator--()
+BOOL MicroFile::operator--(int)
 {
 	if (nPoint - 1 < fileData) {
 		return 0;
@@ -218,4 +227,45 @@ BOOL MicroBinary::Set(DWORD sour)
 {
 	*(DWORD*)nPoint = sour;
 	return 0;
+}
+
+BOOL MicroFile::Gate(LPVOID tart)
+{
+	if (size > 0) {
+		memcpy_s(tart, size, fileData, size);
+		return 1;
+	}
+	return 0;
+}
+
+MicroText::MicroText(LPCWSTR filename) :MicroFile(filename)
+{
+}
+
+MicroText::~MicroText()
+{
+}
+
+BOOL MicroText::Get(LPWSTR tart)
+{
+	lstrcpyW(tart, (LPCWSTR)nPoint);
+
+	return 0;
+}
+
+BOOL MicroText::Get(LPSTR tart)
+{
+	lstrcpyA(tart, (LPSTR)nPoint);
+	return 0;
+}
+
+MicroBinary& MicroBinary::operator=(int sour)
+{
+	if (sour > this->size)
+	{
+		nPoint = fileData + size;
+		return *this;
+	}
+	nPoint = fileData + sour;
+	return *this;
 }
