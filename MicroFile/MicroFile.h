@@ -119,3 +119,15 @@ private:
 	wstring* wData = new wstring;
 	string* Data = new string;
 };
+
+class MicroData :public MicroFile
+{
+public:
+	MicroData(LPCWSTR filename, DWORD size);
+	~MicroData();
+
+	BOOL Join(DWORD space, LPCVOID sour, DWORD size);
+
+private:
+
+};

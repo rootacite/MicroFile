@@ -398,8 +398,6 @@ void MicroText::Clear()
 		*wData = L"";
 }
 
-
-
 MicroText& MicroText::operator=(int sour)
 {
 	if (m_code == 1)
@@ -465,3 +463,12 @@ BOOL MicroText::operator--(int)
 	}
 	return 0;
 }
+
+MicroData::MicroData(LPCWSTR filename, DWORD size) :MicroFile(filename)
+{
+}
+
+MicroData::~MicroData()
+{
+}
+
