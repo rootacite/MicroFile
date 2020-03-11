@@ -4,8 +4,15 @@
 #include <string>
 using namespace std;
 
-
 #define DLLAPI __declspec(dllexport)
+
+#ifndef ALGORITHM_EXPORTS
+#define ALGORITHM_CLASS __declspec(dllimport)
+#define ALGORITHM_TEMPLATE
+#else //EXPORT
+#define ALGORITHM_CLASS __declspec(dllexport)
+#define ALGORITHM_TEMPLATE __declspec(dllexport)
+#endif
 
 
 #define ENCODE_BYTE 1
@@ -24,7 +31,7 @@ public:
 	//清空文件
 	void Clear();
     //保存修改
-	BOOL Save();
+	virtual BOOL Save();
 	//获取文件大小
 	DWORD Size();
 	///将一段数据推入文件末尾
@@ -32,7 +39,7 @@ public:
 	///将一段数据从文件末尾弹出
 	void Pop(LPVOID sour, ULONG size);
 	//从当前读取位置截取数据
-	void Sub(LPBYTE tart,int size);
+	void Sub(LPVOID tart,int size);
 
 	//复制整个文件数据
 	BOOL Gate(LPVOID tart);
@@ -94,7 +101,7 @@ public:
 	BOOL Set(LPCWSTR tart);
 	BOOL Set(LPCSTR tart);
 
-
+	BOOL Save();
 	BOOL Load();
 	//MicroText& operator=(int sour);
 	void Push(LPCWSTR sour);
@@ -120,14 +127,29 @@ private:
 	string* Data = new string;
 };
 
-class MicroData :public MicroFile
+
+class DLLAPI MicroData :public MicroFile
 {
 public:
-	MicroData(LPCWSTR filename, DWORD size);
-	~MicroData();
+	 MicroData(LPCWSTR filename, DWORD nsize);
+	 ~MicroData();
 
-	BOOL Join(DWORD space, LPCVOID sour, DWORD size);
 
+	 void operator=(int sour);
+
+	 BOOL operator++(int);
+	 BOOL operator--(int);
+	 BOOL operator-=(DWORD count);
+	 	BOOL operator+=(DWORD count);
+	 void Push(LPCVOID sour);
+	///将一段数据从文件末尾弹出
+	 void Pop(LPVOID tart);
+
+	 BOOL Get(LPBYTE tart);
+	 BOOL Set(BYTE sour);
+
+	 BOOL Get(LPVOID tart);
+	 BOOL Set(LPCVOID sour);
 private:
-
+	int structure;
 };

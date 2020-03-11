@@ -1,0 +1,13 @@
+﻿  MicroFile.cpp
+D:\VSProject\MicroFile\MicroFile\MicroFile.cpp(121,18): warning C4018: “>”: 有符号/无符号不匹配
+D:\VSProject\MicroFile\MicroFile\MicroFile.cpp(137,11): warning C4018: “>”: 有符号/无符号不匹配
+D:\VSProject\MicroFile\MicroFile\MicroFile.cpp(244,11): warning C4018: “>”: 有符号/无符号不匹配
+D:\VSProject\MicroFile\MicroFile\MicroFile.cpp(503,21): warning C4018: “>”: 有符号/无符号不匹配
+  dllmain.cpp
+    正在创建库 D:\VSProject\MicroFile\Release\MicroFile.lib 和对象 D:\VSProject\MicroFile\Release\MicroFile.exp
+  正在生成代码
+  14 of 235 functions ( 6.0%) were compiled, the rest were copied from previous compilation.
+    2 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  MicroFile.vcxproj -> D:\VSProject\MicroFile\Release\MicroFile.dll

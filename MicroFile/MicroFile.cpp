@@ -127,7 +127,7 @@ void MicroFile::Pop(LPVOID sour, ULONG size)
 	return;
 }
 
-void MicroFile::Sub(LPBYTE tart, int size)
+void MicroFile::Sub(LPVOID tart, int size)
 {
 	memcpy_s(tart, size, nPoint, size);
 }
@@ -464,11 +464,125 @@ BOOL MicroText::operator--(int)
 	return 0;
 }
 
-MicroData::MicroData(LPCWSTR filename, DWORD size) :MicroFile(filename)
+
+MicroData::MicroData(LPCWSTR filename, DWORD nsize) :MicroFile(filename)
 {
+	structure = nsize;
 }
+
 
 MicroData::~MicroData()
 {
 }
 
+
+
+
+BOOL MicroData::operator++(int)
+{
+	if (nPoint + structure > fileData + size) {
+		return 0;
+	}
+	nPoint+= structure;
+	return 0;
+}
+
+
+BOOL MicroData::operator--(int)
+{
+	if (nPoint - structure < fileData) {
+		return 0;
+	}
+	nPoint-=structure;
+	return 1;
+}
+
+
+void MicroData::operator=(int sour)
+{
+	if (sour*structure > this->size)
+	{
+		nPoint = fileData + size;
+		return;
+	}
+	nPoint = fileData + sour*structure;
+	// TODO: 在此处插入 return 语句
+}
+
+
+void  MicroData::Push(LPCVOID sour)
+{
+	this->MicroFile::Push(sour, structure);
+}
+
+
+void MicroData::Pop(LPVOID tart)
+{
+	this->MicroFile::Pop(&tart, structure);
+}
+
+
+BOOL MicroData::operator-=(DWORD count)
+{
+	if (nPoint - (count*structure) < fileData) {
+		return 0;
+	}
+	nPoint -= (count * structure);
+	return 1;
+}
+
+
+BOOL  MicroData::operator+=(DWORD count)
+{
+	if (nPoint + (count * structure) > fileData + size) {
+		return 0;
+	}
+	nPoint += (count * structure);
+	return 1;
+}
+
+
+BOOL MicroData::Set(BYTE sour)
+{
+	*nPoint = sour;
+	return 0;
+}
+
+
+BOOL MicroData::Get(LPBYTE tart)
+{
+	*tart = *nPoint;
+
+	return 0;
+}
+
+
+BOOL MicroData::Set(LPCVOID sour)
+{
+	memcpy_s(nPoint, structure, sour, structure);
+	return 0;
+}
+
+
+BOOL MicroData::Get(LPVOID tart)
+{
+	memcpy_s(tart,structure,nPoint, structure);
+
+	return 0;
+}
+
+void TEST() {
+
+}
+
+BOOL MicroText::Save()
+{
+	CloseHandle(this->m_file);
+	this->m_file = CreateFileW((*name).c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (this->m_file == INVALID_HANDLE_VALUE)
+		return 0;
+	if (size > 0)
+		return WriteFile(this->m_file, fileData, size - m_code, NULL, NULL);
+	return 0;
+}
