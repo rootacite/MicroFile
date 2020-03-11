@@ -136,7 +136,7 @@ MicroFile& MicroFile::operator=(int sour)
 {
 	if (sour > this->size)
 	{
-		nPoint = fileData + size;
+		nPoint = fileData + (size-1);
 		return *this;
 	}
 	nPoint = fileData + sour;
@@ -151,7 +151,7 @@ BYTE& MicroFile::operator*()
 
 BOOL MicroFile::operator++(int)
 {
-	if (nPoint + 1 > fileData + size) {
+	if (nPoint + 1 >= fileData + size) {
 		return 0;
 	}
 	nPoint ++;
@@ -178,7 +178,7 @@ BOOL MicroFile::operator-=(DWORD count)
 
 BOOL MicroFile::operator+=(DWORD count)
 {
-	if (nPoint + count > fileData + size) {
+	if (nPoint + count >= fileData + size) {
 		return 0;
 	}
 	nPoint += count;
@@ -241,9 +241,9 @@ BOOL MicroFile::Gate(LPVOID tart)
 
 MicroBinary& MicroBinary::operator=(int sour)
 {
-	if (sour > this->size)
+	if (sour >= this->size)
 	{
-		nPoint = fileData + size;
+		nPoint = fileData + (size-1);
 		return *this;
 	}
 	nPoint = fileData + sour;
@@ -425,7 +425,7 @@ BOOL MicroText::operator++(int)
 {
 	if (m_code == 1)
 	{
-		if (nPoint + 1 > fileData + size) {
+		if (nPoint + 1 >= fileData + size) {
 			return 0;
 		}
 		nPoint++;
@@ -433,7 +433,7 @@ BOOL MicroText::operator++(int)
 	}
 	else 
 	{
-		if (nPoint + 2 > fileData + size) {
+		if (nPoint + 2 >= fileData + size) {
 			return 0;
 		}
 		nPoint+=2;
@@ -480,7 +480,7 @@ MicroData::~MicroData()
 
 BOOL MicroData::operator++(int)
 {
-	if (nPoint + structure > fileData + size) {
+	if (nPoint + structure >= fileData + size) {
 		return 0;
 	}
 	nPoint+= structure;
@@ -500,9 +500,9 @@ BOOL MicroData::operator--(int)
 
 void MicroData::operator=(int sour)
 {
-	if (sour*structure > this->size)
+	if (sour*structure >= this->size)
 	{
-		nPoint = fileData + size;
+		nPoint = fileData + (size-1);
 		return;
 	}
 	nPoint = fileData + sour*structure;
@@ -534,7 +534,7 @@ BOOL MicroData::operator-=(DWORD count)
 
 BOOL  MicroData::operator+=(DWORD count)
 {
-	if (nPoint + (count * structure) > fileData + size) {
+	if (nPoint + (count * structure) >= fileData + size) {
 		return 0;
 	}
 	nPoint += (count * structure);
