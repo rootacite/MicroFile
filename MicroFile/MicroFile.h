@@ -112,6 +112,8 @@ public:
 	void Pop(LPSTR tart, int snbize);
 	void Clear();
 
+	DWORD Size();
+
 	MicroText& operator=(int sour);
 
 	char& operator*();
@@ -144,7 +146,7 @@ public:
 	 void Push(LPCVOID sour);
 	///将一段数据从文件末尾弹出
 	 void Pop(LPVOID tart);
-
+	 DWORD Size();
 	 BOOL Get(LPBYTE tart);
 	 BOOL Set(BYTE sour);
 

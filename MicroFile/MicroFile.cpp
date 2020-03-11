@@ -484,7 +484,7 @@ BOOL MicroData::operator++(int)
 		return 0;
 	}
 	nPoint+= structure;
-	return 0;
+	return 1;
 }
 
 
@@ -585,4 +585,16 @@ BOOL MicroText::Save()
 	if (size > 0)
 		return WriteFile(this->m_file, fileData, size - m_code, NULL, NULL);
 	return 0;
+}
+
+DWORD MicroText::Size()
+{
+
+	return size/m_code;
+}
+
+DWORD MicroData::Size()
+{
+
+	return size / structure;
 }
